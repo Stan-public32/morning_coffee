@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Morning_Coffee</title>
+</head>
+<body>
+
+<header>
+    <h1>Morning_<span class="underscore">Coffee</span></h1>
+    <div class="subtitle">регулярная онлайн газета</div>
+    <div class="author">
+        OpenSource проект Станислава Конова<br>
+        (GitHub: <a href="https://github.com/Stan-public32">Stan-public32</a>)
+    </div>
+</header>
+
+<!-- Горизонтальный блок: Погода (30%) + Гороскоп (70%) -->
+<div class="top-info">
+    <div class="weather">
+        <h2>Погода</h2>
+        {{ weather }}
+    </div>
+    <div class="horoscope">
+        <h2>Гороскоп</h2>
+        {% for sign, text in horoscope.items() %}
+            <p><b>{{ sign }}:</b> {{ text }}</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Все новости идут в 2 колонки -->
+<div class="news-col">
+    <h2>Общество и политика</h2>
+    {% for item in society_news %}
+        <div class="news-item">
+            <div class="news-title">{{ item.title }}</div>
+            <div class="news-meta">
+                {{ item.date }} —
+                <a href="{{ item.url }}">{{ item.url }}</a>
+            </div>
+            <div class="news-summary">{{ item.summary }}</div>
+        </div>
+    {% endfor %}
+
+    <h2>Наука и техника</h2>
+    {% for item in science_news %}
+        <div class="news-item">
+            <div class="news-title">{{ item.title }}</div>
+            <div class="news-meta">
+                {{ item.date }} —
+                <a href="{{ item.url }}">{{ item.url }}</a>
+            </div>
+            <div class="news-summary">{{ item.summary }}</div>
+        </div>
+    {% endfor %}
+</div>
+
+</body>
+</html>
