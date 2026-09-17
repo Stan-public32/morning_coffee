@@ -32,6 +32,7 @@ class Morning_report:
             start = horoscopes[i].find(',')
             horoscopes[i] = horoscopes[i][start+1:]
             dict_out[self.zodiac_signs[i]] = horoscopes[i]
+        # print(dict_out)
         return dict_out
 
     def get_greetings(self):
@@ -70,7 +71,21 @@ class Morning_report:
         forecast_text += f"Вероятность дождя: {dataw['rainp']}%\n"
         forecast_text += f"Относительная влажность: {dataw['rhum']}%\nСредняя скорость ветра: {dataw['winds']} м/с\n"
         forecast_text += f"Восход: {dataw['sunrise']}, Закат: {dataw['sunset']}\nФаза Луны: {moon_text}"
-        return forecast_text
+        icon_code = list(dataw['symb'][1:])
+        if icon_code[0] == "0" or icon_code[0] == "1":
+            icon_file = "img/clear.png"
+        elif icon_code[0] == "2" or icon_code[0] == "3":
+            icon_file = "img/sun_clouds.png"
+        elif icon_code[1] == "4":
+            icon_file = "img/lightning.png"
+        elif (icon_code[1] == "1" or icon_code[1] == "2" or icon_code[1] == "3") and (icon_code[2] == "0" or icon_code[2] == "1"):
+            icon_file = "img/raining.png"
+        elif (icon_code[1] == "1" or icon_code[1] == "2" or icon_code[1] == "3") and (icon_code[2] == "2"):
+            icon_file = "img/snowy.png"
+        else:
+            icon_file = "img/cloudy.png"
+        # print(forecast_text)
+        return forecast_text, icon_file
 
     def get_sci_news(self):
         url = "https://naked-science.ru/"
@@ -86,6 +101,8 @@ class Morning_report:
         list_dict_sci_news = []
         if len(dates) != len(headers):
             raise Exception("Ошибка получения информации от Naked Science.")
+        # with open("test.txt", "w") as f:
+        #    f.write(str(headers))
         for i in range(len(dates)):
             dict_sci_news = {}
             link_str = str(headers[i].find("div", class_="news-item-title"))
@@ -96,21 +113,27 @@ class Morning_report:
             dict_sci_news['title'] = headers[i].find(
                 "div", class_="news-item-title").text.strip()
             str_to_print = dict_sci_news['title']
+            # print(str_to_print)
             dict_sci_news['date'] = dates[i].find(
                 "span", class_="echo_date").text.strip()
             str_to_print += "\n" + \
                 dict_sci_news['date']
+            # print(str_to_print)
             dict_sci_news['url'] = link_str
             str_to_print += ". " + \
                 link_str
+            # print(str_to_print)
             dict_sci_news['summary'] = headers[i].find(
-                "div", class_="news-item-excerpt").text.strip()
+                "div", class_="news-item-excerpt").text.strip() if headers[i].find(
+                "div", class_="news-item-excerpt") != None else "Инфографика по ссылке."
             str_to_print += "\n" + \
                 dict_sci_news['summary'] + "\n"
+            # print(str_to_print)
             news_blocks.append(str_to_print)
             list_dict_sci_news.append(dict_sci_news)
         text_news = "\nНовости науки и техники:\n\n"
         text_news += "--------\n".join(news_blocks)
+        # print(text_news)
         return text_news, list_dict_sci_news
 
     def get_business_news(self):
@@ -145,6 +168,7 @@ class Morning_report:
             list_dict_business_news.append(dict_business_news)
         news_output = "\n\nГлавные новости - Россия и мир:\n\n" + \
             "--------\n".join(news_list)
+        # print(news_output)
         return news_output, list_dict_business_news
 
 
@@ -153,16 +177,20 @@ def main():
     text_greetings = report.get_greetings()
     horoscope = report.get_horoscope()
     text_horoscope = "\nГороскоп: " + str(horoscope['Весы'])
-    weather = report.get_weather()
+    weather, icon_file = report.get_weather()
     text_weather = weather
     text_news_business, society_news = report.get_business_news()
     text_news_sci, science_news = report.get_sci_news()
-    total_text_report = text_greetings + "\n" + text_horoscope + \
-        "\n" + text_weather + "\n" + \
-        text_news_business + "\n" + text_news_sci
-    print(total_text_report)
-    print('\n')
+
+    # total_text_report = text_greetings + "\n" + text_horoscope + \
+    #    "\n" + text_weather + "\n" + \
+    #    text_news_business + "\n" + text_news_sci
+    # print(total_text_report)
+    # print('\n')
+
     context = {
+        "greetings": text_greetings,
+        "weather_icon": icon_file,
         "weather": weather,
         "horoscope": horoscope,
         "society_news": society_news,
