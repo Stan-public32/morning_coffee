@@ -17,9 +17,11 @@
     </header>
 
     <header>
-        <h2>{{ greetings }}</h2>
+        <h3>{{ greetings }}</h3>
     </header>
-
+    <div class="currencies">
+        <p><b>Курсы валют по ЦБ:</b> {{ currency }}</p>
+    </div>
     <!-- Горизонтальный блок: Погода (30%) + Гороскоп (70%) -->
     <div class="top-info">
         <div class="weather">
@@ -45,6 +47,7 @@
                 {{ item.date }} —
                 <a href="{{ item.url }}">{{ item.url }}</a>
             </div>
+            <img src="{{ item.img }}" class="section-image">
             <div class="news-summary">{{ item.summary }}</div>
         </div>
         {% endfor %}
@@ -57,6 +60,7 @@
                 {{ item.date }} —
                 <a href="{{ item.url }}">{{ item.url }}</a>
             </div>
+            <img src="{{ item.img }}" class="section-image">
             <div class="news-summary">{{ item.summary }}</div>
         </div>
         {% endfor %}

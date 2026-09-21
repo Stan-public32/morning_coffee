@@ -32,7 +32,6 @@ class Morning_report:
             start = horoscopes[i].find(',')
             horoscopes[i] = horoscopes[i][start+1:]
             dict_out[self.zodiac_signs[i]] = horoscopes[i]
-        # print(dict_out)
         return dict_out
 
     def get_greetings(self):
@@ -44,6 +43,25 @@ class Morning_report:
             self.weekdays_dict[self.today_date.weekday()] + ", " + str(self.today_date.day) + " " + text_month + " " + \
             str(self.today_date.year) + " года!"
         return text_output
+
+    def get_currency(self):
+        url = "https://www.cbr.ru/currency_base/daily/"
+        r = requests.get(url, timeout=10, headers={
+                         "User-Agent": "Mozilla/5.0"})
+        r.raise_for_status()
+        soup = BeautifulSoup(r.text, "html.parser")
+        curr = soup.find("div", class_="table-wrapper")
+        target_segment = curr.find_all("tr")
+        curr_codes = ["<td>840</td>", "<td>978</td>", "<td>156</td>"]
+        results = []
+        for code in curr_codes:
+            temp = str(target_segment)[str(target_segment).find(str(code)):]
+            temp = temp[:str(temp).find("</tr>")]
+            temp_list = temp.split('\n')
+            temp = temp_list[1][4:-5] + ': '
+            temp += temp_list[4][4:-7]
+            results.append(temp)
+        return ', '.join(results) + '.'
 
     def get_weather(self):
         url = "https://api.foreca.net/data/favorites/" + self.weather_city + ".json"
@@ -84,7 +102,6 @@ class Morning_report:
             icon_file = "img/snowy.png"
         else:
             icon_file = "img/cloudy.png"
-        # print(forecast_text)
         return forecast_text, icon_file
 
     def get_sci_news(self):
@@ -97,43 +114,57 @@ class Morning_report:
             "div", class_="feed-container active", id="feed-today")
         dates = news.find_all("div", class_="post-meta-info")
         headers = news.find_all("div", class_="community-item-midland")
+        imgs = news.find_all("div", class_="news-item-image-inner")
+        imgs_dict = {}
+        for img_block in imgs:
+            start_pos = str(img_block).find("href=")
+            ref = str(img_block)[start_pos+6:]
+            end_position = ref.find('"')
+            ref = ref[:end_position]
+            img = str(img_block)[end_position+1:]
+            start_pos = img.find('src="')
+            img = img[start_pos+5:]
+            end_position = img.find('"')
+            img = img[:end_position]
+            imgs_dict[ref] = img
         news_blocks = []
         list_dict_sci_news = []
         if len(dates) != len(headers):
             raise Exception("Ошибка получения информации от Naked Science.")
-        # with open("test.txt", "w") as f:
-        #    f.write(str(headers))
         for i in range(len(dates)):
-            dict_sci_news = {}
-            link_str = str(headers[i].find("div", class_="news-item-title"))
-            start_pos = link_str.find("href=")
-            link_str = link_str[start_pos + 6:]
-            end_pos = link_str.find('"')
-            link_str = link_str[:end_pos]
-            dict_sci_news['title'] = headers[i].find(
-                "div", class_="news-item-title").text.strip()
-            str_to_print = dict_sci_news['title']
-            # print(str_to_print)
-            dict_sci_news['date'] = dates[i].find(
-                "span", class_="echo_date").text.strip()
-            str_to_print += "\n" + \
-                dict_sci_news['date']
-            # print(str_to_print)
-            dict_sci_news['url'] = link_str
-            str_to_print += ". " + \
-                link_str
-            # print(str_to_print)
-            dict_sci_news['summary'] = headers[i].find(
-                "div", class_="news-item-excerpt").text.strip() if headers[i].find(
-                "div", class_="news-item-excerpt") != None else "Инфографика по ссылке."
-            str_to_print += "\n" + \
-                dict_sci_news['summary'] + "\n"
-            # print(str_to_print)
-            news_blocks.append(str_to_print)
-            list_dict_sci_news.append(dict_sci_news)
+            if i < 8:
+                dict_sci_news = {}
+                link_str = str(headers[i].find(
+                    "div", class_="news-item-title"))
+                start_pos = link_str.find("href=")
+                link_str = link_str[start_pos + 6:]
+                end_pos = link_str.find('"')
+                link_str = link_str[:end_pos]
+                dict_sci_news['title'] = headers[i].find(
+                    "div", class_="news-item-title").text.strip()
+                str_to_print = dict_sci_news['title']
+                dict_sci_news['date'] = dates[i].find(
+                    "span", class_="echo_date").text.strip()
+                str_to_print += "\n" + \
+                    dict_sci_news['date']
+                dict_sci_news['url'] = link_str
+                # for img_block in imgs:
+
+                str_to_print += ". " + \
+                    link_str
+                dict_sci_news['summary'] = headers[i].find(
+                    "div", class_="news-item-excerpt").text.strip() if headers[i].find(
+                    "div", class_="news-item-excerpt") != None else "Инфографика по ссылке."
+                str_to_print += "\n" + \
+                    dict_sci_news['summary'] + "\n"
+                dict_sci_news['img'] = ""
+                for img_ref in imgs_dict.keys():
+                    if img_ref == dict_sci_news["url"] and i % 3 == 0:
+                        dict_sci_news['img'] = imgs_dict[img_ref]
+                news_blocks.append(str_to_print)
+                list_dict_sci_news.append(dict_sci_news)
         text_news = "\nНовости науки и техники:\n\n"
         text_news += "--------\n".join(news_blocks)
-        # print(text_news)
         return text_news, list_dict_sci_news
 
     def get_business_news(self):
@@ -145,53 +176,60 @@ class Morning_report:
         news_block = soup.find_all("article", class_="main-block-news")
         news_list = []
         list_dict_business_news = []
+        i = 0
         for block in news_block:
-            dict_business_news = {}
-            dict_business_news['title'] = block.find(
-                "a", class_="block-title").text
-            another_string = dict_business_news['title'] + "\n"
-            dict_business_news['date'] = str(self.today_date)
-            another_string += dict_business_news['date'] + ", "
-            position_start = str(block).find('href="')
-            text_link = "https://www.bfm.ru" + str(block)[position_start + 6:]
-            position_end = text_link.find('"')
-            text_link = text_link[:position_end]
-            dict_business_news['url'] = text_link
-            another_string += dict_business_news['url'] + "\n"
-            dict_business_news['summary'] = block.find(
-                "a", class_="description").text
-            if dict_business_news['summary'][-1] != '.':
-                dict_business_news['summary'] += '.'
-            another_string += dict_business_news['summary']
-            another_string += "\n"
-            news_list.append(another_string)
-            list_dict_business_news.append(dict_business_news)
+            if i < 8:
+                dict_business_news = {}
+                dict_business_news['title'] = block.find(
+                    "a", class_="block-title").text
+                another_string = dict_business_news['title'] + "\n"
+                dict_business_news['date'] = str(self.today_date)
+                another_string += dict_business_news['date'] + ", "
+                position_start = str(block).find('href="')
+                text_link = "https://www.bfm.ru" + \
+                    str(block)[position_start + 6:]
+                position_end = text_link.find('"')
+                text_link = text_link[:position_end]
+                dict_business_news['url'] = text_link
+                another_string += dict_business_news['url'] + "\n"
+                dict_business_news['summary'] = block.find(
+                    "a", class_="description").text
+                if dict_business_news['summary'][-1] != '.':
+                    dict_business_news['summary'] += '.'
+                another_string += dict_business_news['summary']
+                another_string += "\n"
+                news_list.append(another_string)
+                img_block = str(block.find("img"))
+                img_block = img_block[img_block.find("src=")+5:]
+                img_block = img_block[:img_block.find('"')]
+                if img_block.find("extralarge") != -1:
+                    img_block = ""
+                dict_business_news['img'] = img_block
+                list_dict_business_news.append(dict_business_news)
+            i += 1
+        # img_search = news_block.find("div", class_="block-news-container")
+        # print(news_block)
         news_output = "\n\nГлавные новости - Россия и мир:\n\n" + \
             "--------\n".join(news_list)
-        # print(news_output)
         return news_output, list_dict_business_news
 
 
 def main():
     report = Morning_report()
     text_greetings = report.get_greetings()
+    currency = report.get_currency()
     horoscope = report.get_horoscope()
     text_horoscope = "\nГороскоп: " + str(horoscope['Весы'])
     weather, icon_file = report.get_weather()
     text_weather = weather
     text_news_business, society_news = report.get_business_news()
     text_news_sci, science_news = report.get_sci_news()
-
-    # total_text_report = text_greetings + "\n" + text_horoscope + \
-    #    "\n" + text_weather + "\n" + \
-    #    text_news_business + "\n" + text_news_sci
-    # print(total_text_report)
-    # print('\n')
-
+    society_img = society_news[0]['img']
     context = {
         "greetings": text_greetings,
         "weather_icon": icon_file,
         "weather": weather,
+        "currency": currency,
         "horoscope": horoscope,
         "society_news": society_news,
         "science_news": science_news,
@@ -201,11 +239,11 @@ def main():
     html_string = template.render(context)
     Path("output").mkdir(exist_ok=True)
     HTML(string=html_string, base_url='.').write_pdf(
-        "output/Morning_Coffee.pdf",
+        "output/Morning_Coffee_" + str(report.today_date) + ".pdf",
         stylesheets=[CSS('style.css')]
     )
 
-    print("✅ PDF создан: output/Morning_Coffee.pdf")
+    print("output/Morning_Coffee_" + str(report.today_date) + ".pdf")
 
 
 if __name__ == '__main__':

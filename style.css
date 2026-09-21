@@ -36,12 +36,12 @@ body {
 header {
     text-align: center;
     border-bottom: 3px double #222;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
+    padding-bottom: 4px;
+    margin-bottom: 4px;
 }
 
 h1 {
-    font-size: 42pt;
+    font-size: 46pt;
     margin: 0;
     letter-spacing: 1px;
 }
@@ -56,18 +56,23 @@ h1 .underscore {
     letter-spacing: 4px;
     text-transform: lowercase;
     color: #444;
+    padding-bottom: 4px;
+    margin-bottom: 4px;
 }
 
 .author {
     text-align: right;
-    font-size: 10pt;
+    font-size: 9pt;
     color: #555;
-    margin: 8px 0 0;
+    margin: 2px 0 0 0;
+    padding-bottom: 0px;
+    margin-bottom: 0px;
 }
 
 .author a {
     color: #555;
     text-decoration: none;
+    margin-bottom: 0px;
 }
 
 /* ---------- 5. ЗАГОЛОВКИ РАЗДЕЛОВ ---------- */
@@ -82,13 +87,22 @@ h2 {
     page-break-after: avoid;
 }
 
+.currencies p {
+    font-size: 9.5pt;
+    text-align: left;
+    margin: 0 0 8px 0;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 2px;
+    margin-bottom: 6px;
+}
+
 /* ---------- 6. ГОРИЗОНТАЛЬНЫЙ БЛОК: ПОГОДА + ГОРОСКОП ---------- */
 .top-info {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     border-bottom: 1px solid #ccc;
-    padding-bottom: 12px;
-    margin-bottom: 15px;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
     /* Не разрывать этот блок между страницами */
     break-inside: avoid;
     page-break-inside: avoid;
@@ -97,9 +111,18 @@ h2 {
 .weather {
     flex: 0 0 30%;
     /* ровно 30% ширины */
-    font-size: 10pt;
+    font-size: 9.5pt;
     border-right: 1px solid #ccc;
-    padding-right: 12px;
+    padding-right: 6px;
+}
+
+.weather-icon {
+    display: block;
+    margin: 2px auto;
+    /* 8px сверху/снизу, auto по горизонтали = центрирование */
+    width: 80px;
+    /* или другой размер */
+    height: auto;
 }
 
 .horoscope {
@@ -108,7 +131,7 @@ h2 {
     font-size: 9.5pt;
     column-count: 2;
     /* гороскоп тоже в 2 колонки для компактности */
-    column-gap: 12px;
+    column-gap: 8px;
 }
 
 .horoscope p {
@@ -118,12 +141,12 @@ h2 {
 /* ---------- 7. НОВОСТИ В ДВЕ КОЛОНКИ ---------- */
 .news-col {
     column-count: 2;
-    column-gap: 18px;
+    column-gap: 12px;
 }
 
 .news-item {
-    margin-bottom: 14px;
-    padding-bottom: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
     border-bottom: 1px dotted #bbb;
     break-inside: avoid;
     page-break-inside: avoid;
@@ -135,7 +158,7 @@ h2 {
 
 .news-title {
     font-family: inherit;
-    font-size: 12pt;
+    font-size: 11pt;
     font-weight: bold;
     margin: 0 0 3px 0;
 }
@@ -156,4 +179,20 @@ h2 {
     font-size: 10pt;
     margin: 0;
     text-align: justify;
+}
+
+.section-image {
+    display: block;
+    margin: 2px auto;
+    width: 340px;
+    height: auto;
+}
+
+/* ---------- 5. ЗАГОЛОВКИ РАЗДЕЛОВ ---------- */
+h3 {
+    font-size: 12pt;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding-bottom: 3px;
+    margin: 0 0 0 0;
 }
