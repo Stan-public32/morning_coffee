@@ -213,6 +213,51 @@ class Morning_report:
             "--------\n".join(news_list)
         return news_output, list_dict_business_news
 
+    def get_history(self):
+        url = "https://www.calend.ru/events/"
+        bn = requests.get(url, timeout=10, headers={
+            "User-Agent": "Mozilla/5.0"})
+        bn.raise_for_status()
+        soup = BeautifulSoup(bn.text, "html.parser")
+        histories = soup.find_all("li", class_="three-three")
+        list_dict_histories = []
+        histories_list = []
+        i = 0
+        for block in histories:
+            if i < 8:
+                dict_business_news = {}
+                dict_business_news['title'] = block.find(
+                    "span", class_="title").text
+                print(dict_business_news["title"])
+                another_string = dict_business_news['title'] + "\n"
+                dict_business_news['date'] = block.find(
+                    "span", class_="year").text
+                print(dict_business_news["date"])
+                another_string += dict_business_news['date'] + ", "
+                position_start = str(block).find('href="')
+                text_link = str(block)[position_start + 6:]
+                position_end = text_link.find('"')
+                text_link = text_link[:position_end]
+                dict_business_news['url'] = text_link
+                print(dict_business_news["url"])
+                another_string += dict_business_news['url'] + "\n"
+                dict_business_news['summary'] = block.find(
+                    "p", class_="descr descrFixed").text
+                print(dict_business_news["summary"])
+                another_string += dict_business_news['summary']
+                another_string += "\n"
+                histories_list.append(another_string)
+                start_point = str(block).find("url('")
+                img_block = str(block)[start_point+5:]
+                end_point = str(img_block).find("'")
+                img_block = img_block[:end_point]
+                print(img_block)
+                dict_business_news['img'] = img_block
+                print(dict_business_news["img"])
+                list_dict_histories.append(dict_business_news)
+            i += 1
+        return histories_list, list_dict_histories
+
 
 def main():
     report = Morning_report()
@@ -225,6 +270,8 @@ def main():
     text_news_business, society_news = report.get_business_news()
     text_news_sci, science_news = report.get_sci_news()
     society_img = society_news[0]['img']
+    text_histories, histories = report.get_history()
+    print("parsed")
     context = {
         "greetings": text_greetings,
         "weather_icon": icon_file,
@@ -233,6 +280,7 @@ def main():
         "horoscope": horoscope,
         "society_news": society_news,
         "science_news": science_news,
+        "histories": histories
     }
     env = Environment(loader=FileSystemLoader('.'))
     template = env.get_template('template.html')

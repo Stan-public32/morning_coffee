@@ -64,7 +64,21 @@
             <div class="news-summary">{{ item.summary }}</div>
         </div>
         {% endfor %}
+
+        <h2>День в истории</h2>
+        {% for item in histories %}
+        <div class="news-item">
+            <div class="news-title">{{ item.title }}</div>
+            <div class="news-meta">
+                {{ item.date }} —
+                <a href="{{ item.url }}">{{ item.url }}</a>
+            </div>
+            <img src="{{ item.img }}" class="section-image">
+            <div class="news-summary">{{ item.summary }}</div>
+        </div>
+        {% endfor %}
     </div>
+
 
 </body>
 
