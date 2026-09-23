@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
+import emails
 import requests
 from weasyprint import HTML, CSS
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 from datetime import date
+from datetime import datetime
+from random import randint
+import time
 from bs4 import BeautifulSoup
 
 
@@ -207,8 +211,6 @@ class Morning_report:
                 dict_business_news['img'] = img_block
                 list_dict_business_news.append(dict_business_news)
             i += 1
-        # img_search = news_block.find("div", class_="block-news-container")
-        # print(news_block)
         news_output = "\n\nГлавные новости - Россия и мир:\n\n" + \
             "--------\n".join(news_list)
         return news_output, list_dict_business_news
@@ -228,38 +230,63 @@ class Morning_report:
                 dict_business_news = {}
                 dict_business_news['title'] = block.find(
                     "span", class_="title").text
-                print(dict_business_news["title"])
                 another_string = dict_business_news['title'] + "\n"
                 dict_business_news['date'] = block.find(
-                    "span", class_="year").text
-                print(dict_business_news["date"])
+                    "span", class_="year").text + str(self.today_date)[4:]
+                dict_business_news['title'] = dict_business_news['date'] + \
+                    ": " + dict_business_news['title']
                 another_string += dict_business_news['date'] + ", "
                 position_start = str(block).find('href="')
                 text_link = str(block)[position_start + 6:]
                 position_end = text_link.find('"')
                 text_link = text_link[:position_end]
                 dict_business_news['url'] = text_link
-                print(dict_business_news["url"])
                 another_string += dict_business_news['url'] + "\n"
                 dict_business_news['summary'] = block.find(
                     "p", class_="descr descrFixed").text
-                print(dict_business_news["summary"])
                 another_string += dict_business_news['summary']
                 another_string += "\n"
                 histories_list.append(another_string)
-                start_point = str(block).find("url('")
-                img_block = str(block)[start_point+5:]
-                end_point = str(img_block).find("'")
-                img_block = img_block[:end_point]
-                print(img_block)
-                dict_business_news['img'] = img_block
-                print(dict_business_news["img"])
+                if i % 3 == 0:
+                    start_point = str(block).find("url('")
+                    img_block = str(block)[start_point+5:]
+                    end_point = str(img_block).find("'")
+                    img_block = img_block[:end_point]
+                    dict_business_news['img'] = img_block
+                else:
+                    dict_business_news["img"] = ""
                 list_dict_histories.append(dict_business_news)
             i += 1
         return histories_list, list_dict_histories
 
+    def get_prog_news(self):
+        url = "https://tproger.ru/news"
+        bn = requests.get(url, timeout=10, headers={
+            "User-Agent": "Mozilla/5.0"})
+        bn.raise_for_status()
+        soup = BeautifulSoup(bn.text, "html.parser")
+        news_all = soup.find_all("a", class_="tp-new-design-post-card__title")
+        list_dict_progs = []
+        progs_list = []
+        i = 0
+        for block in news_all:
+            if i < 8:
+                dict_prog_news = {}
+                dict_prog_news['title'] = block.text
+                another_string = dict_prog_news['title'] + "\n"
+                position_start = str(block).find('href="')
+                text_link = str(block)[position_start + 6:]
+                position_end = text_link.find('"')
+                text_link = "https://tproger.ru" + text_link[:position_end]
+                dict_prog_news['url'] = text_link
+                another_string += text_link
+                progs_list.append(another_string)
+                list_dict_progs.append(dict_prog_news)
+            i += 1
+        return progs_list, list_dict_progs
 
-def main():
+
+def prepare_report():
     report = Morning_report()
     text_greetings = report.get_greetings()
     currency = report.get_currency()
@@ -271,7 +298,9 @@ def main():
     text_news_sci, science_news = report.get_sci_news()
     society_img = society_news[0]['img']
     text_histories, histories = report.get_history()
-    print("parsed")
+    text_progs, progs = report.get_prog_news()
+    time_stamp = str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+    print(time_stamp + ": parsed")
     context = {
         "greetings": text_greetings,
         "weather_icon": icon_file,
@@ -280,7 +309,8 @@ def main():
         "horoscope": horoscope,
         "society_news": society_news,
         "science_news": science_news,
-        "histories": histories
+        "histories": histories,
+        "progs": progs
     }
     env = Environment(loader=FileSystemLoader('.'))
     template = env.get_template('template.html')
@@ -290,13 +320,33 @@ def main():
         "output/Morning_Coffee_" + str(report.today_date) + ".pdf",
         stylesheets=[CSS('style.css')]
     )
+    time_stamp = str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+    print(time_stamp + ": output/Morning_Coffee_" +
+          str(report.today_date) + ".pdf")
 
-    print("output/Morning_Coffee_" + str(report.today_date) + ".pdf")
+
+def main():
+    mail_check_interval_base = 120
+    new_report_cycle = 2
+    cycle = 0
+    while (True):
+        mail_check_interval = mail_check_interval_base + randint(0, 20)
+        try:
+            emails.check_mail()
+            time_stamp = str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+            print(time_stamp + ": mail checked")
+
+        except Exception as e:
+            print(f"Возникла ошибка при проверке почты: {e}")
+        if cycle > new_report_cycle:
+            try:
+                prepare_report()
+            except Exception as e:
+                print(f"Возникла ошибка при подготовке файла: {e}")
+            cycle = 0
+        cycle += 1
+        time.sleep(mail_check_interval)
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except Exception as e:
-        print(
-            f"\n\n#####################\nВозникла непредвиденная ошибка:\n{e}\n#####################\n\n")
+    main()

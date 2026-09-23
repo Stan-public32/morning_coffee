@@ -40,6 +40,21 @@ header {
     margin-bottom: 4px;
 }
 
+footer {
+    text-align: right;
+    color: #222;
+    font-size: 9pt;
+    border-top: 1px solid #222;
+    padding-top: 4px;
+    margin-top: 4px;
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+}
+
+footer a {
+    color: #222;
+}
+
 h1 {
     font-size: 46pt;
     margin: 0;
@@ -152,6 +167,17 @@ h2 {
     page-break-inside: avoid;
 }
 
+.news-item-progs {
+    margin-bottom: 3px;
+    padding-bottom: 2px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+.news-item-progs a {
+    color: #222;
+}
+
 .news-item:last-child {
     border-bottom: none;
 }
@@ -183,8 +209,8 @@ h2 {
 
 .section-image {
     display: block;
-    margin: 2px auto;
-    width: 340px;
+    margin: 0px auto;
+    width: 300px;
     height: auto;
 }
 

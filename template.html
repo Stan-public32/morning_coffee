@@ -78,8 +78,14 @@
         </div>
         {% endfor %}
     </div>
-
-
+    <h2>Чистый IT</h2>
+    {% for item in progs %}
+    <div class="news-item-progs">
+        <div class="news-summary">{{ item.title }} <a href="{{ item.url }}"> (подробнее)</a></div>
+    </div>
+    {% endfor %}
+    <footer>Пока на этом все. Захотите еще - пишите запрос на <a href="mailto:public32@yandex.ru">public32@yandex.ru</a>
+        со словом "газета" в теме.</footer>
 </body>
 
 </html>
