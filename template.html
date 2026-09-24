@@ -37,7 +37,7 @@
         </div>
     </div>
 
-    <!-- Все новости идут в 2 колонки -->
+    <!-- Все новости идут в 3 колонки -->
     <div class="news-col">
         <h2>Общество и политика</h2>
         {% for item in society_news %}
@@ -45,33 +45,35 @@
             <div class="news-title">{{ item.title }}</div>
             <div class="news-meta">
                 {{ item.date }} —
-                <a href="{{ item.url }}">{{ item.url }}</a>
+                <a href="{{ item.url }}">bfm.ru</a>
             </div>
             <img src="{{ item.img }}" class="section-image">
             <div class="news-summary">{{ item.summary }}</div>
         </div>
         {% endfor %}
-
+    </div>
+    <div class="news-col">
         <h2>Наука и техника</h2>
         {% for item in science_news %}
         <div class="news-item">
             <div class="news-title">{{ item.title }}</div>
             <div class="news-meta">
                 {{ item.date }} —
-                <a href="{{ item.url }}">{{ item.url }}</a>
+                <a href="{{ item.url }}">naked-science.ru</a>
             </div>
             <img src="{{ item.img }}" class="section-image">
             <div class="news-summary">{{ item.summary }}</div>
         </div>
         {% endfor %}
-
+    </div>
+    <div class="news-col">
         <h2>День в истории</h2>
         {% for item in histories %}
         <div class="news-item">
             <div class="news-title">{{ item.title }}</div>
             <div class="news-meta">
                 {{ item.date }} —
-                <a href="{{ item.url }}">{{ item.url }}</a>
+                <a href="{{ item.url }}">calend.ru</a>
             </div>
             <img src="{{ item.img }}" class="section-image">
             <div class="news-summary">{{ item.summary }}</div>
@@ -81,7 +83,7 @@
     <h2>Чистый IT</h2>
     {% for item in progs %}
     <div class="news-item-progs">
-        <div class="news-summary">{{ item.title }} <a href="{{ item.url }}"> (подробнее)</a></div>
+        <div class="news-summary">-> {{ item.title }} <a href="{{ item.url }}">tproger.ru</a></div>
     </div>
     {% endfor %}
     <footer>Пока на этом все. Захотите еще - пишите запрос на <a href="mailto:public32@yandex.ru">public32@yandex.ru</a>

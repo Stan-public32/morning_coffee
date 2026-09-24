@@ -28,7 +28,7 @@
 body {
     font-family: 'PT Sans Narrow', Arial, sans-serif;
     font-size: 11pt;
-    line-height: 1.35;
+    line-height: 1.25;
     color: #222;
 }
 
@@ -52,7 +52,8 @@ footer {
 }
 
 footer a {
-    color: #222;
+    font-size: 9pt;
+    color: #1a5fb4;
 }
 
 h1 {
@@ -155,16 +156,15 @@ h2 {
 
 /* ---------- 7. НОВОСТИ В ДВЕ КОЛОНКИ ---------- */
 .news-col {
-    column-count: 2;
-    column-gap: 12px;
+    column-count: 3;
+    column-gap: 10px;
+    border-bottom: 1px solid #ccc;
 }
 
 .news-item {
     margin-bottom: 10px;
     padding-bottom: 8px;
     border-bottom: 1px dotted #bbb;
-    break-inside: avoid;
-    page-break-inside: avoid;
 }
 
 .news-item-progs {
@@ -172,10 +172,13 @@ h2 {
     padding-bottom: 2px;
     break-inside: avoid;
     page-break-inside: avoid;
+    font-size: 10pt;
+    line-height: 1.0;
 }
 
 .news-item-progs a {
-    color: #222;
+    color: #1a5fb4;
+    font-size: 9pt;
 }
 
 .news-item:last-child {
@@ -187,12 +190,16 @@ h2 {
     font-size: 11pt;
     font-weight: bold;
     margin: 0 0 3px 0;
+    break-inside: avoid;
+    page-break-inside: avoid;
 }
 
 .news-meta {
     font-size: 8.5pt;
     color: #666;
     margin: 0 0 3px 0;
+    break-inside: avoid;
+    page-break-inside: avoid;
 }
 
 .news-meta a {
@@ -210,7 +217,7 @@ h2 {
 .section-image {
     display: block;
     margin: 0px auto;
-    width: 300px;
+    width: 200px;
     height: auto;
 }
 

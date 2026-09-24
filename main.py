@@ -198,7 +198,7 @@ class Morning_report:
                 another_string += dict_business_news['url'] + "\n"
                 dict_business_news['summary'] = block.find(
                     "a", class_="description").text
-                if dict_business_news['summary'][-1] != '.':
+                if dict_business_news['summary'][-1] != '.' or dict_business_news['summary'][-1] != '?' or dict_business_news['summary'][-1] != '!':
                     dict_business_news['summary'] += '.'
                 another_string += dict_business_news['summary']
                 another_string += "\n"
@@ -242,8 +242,10 @@ class Morning_report:
                 text_link = text_link[:position_end]
                 dict_business_news['url'] = text_link
                 another_string += dict_business_news['url'] + "\n"
-                dict_business_news['summary'] = block.find(
-                    "p", class_="descr descrFixed").text
+                formated_list = str(block.find(
+                    "p", class_="descr descrFixed").text).split('.')
+                dict_business_news['summary'] = '.'.join(
+                    formated_list[:-4]) + '.'
                 another_string += dict_business_news['summary']
                 another_string += "\n"
                 histories_list.append(another_string)
@@ -327,9 +329,19 @@ def prepare_report():
 
 def main():
     mail_check_interval_base = 120
-    new_report_cycle = 2
+    new_report_cycle = 30
     cycle = 0
     while (True):
+        time_now = datetime.now().hour
+        if time_now < 6 or time_now > 23:
+            mail_check_interval_base = 300
+            new_report_cycle = 36
+        elif time_now >= 6 and time_now < 10:
+            mail_check_interval_base = 120
+            new_report_cycle = 15
+        else:
+            mail_check_interval_base = 150
+            new_report_cycle = 30
         mail_check_interval = mail_check_interval_base + randint(0, 20)
         try:
             emails.check_mail()
@@ -349,4 +361,5 @@ def main():
 
 
 if __name__ == '__main__':
+    # prepare_report()
     main()
