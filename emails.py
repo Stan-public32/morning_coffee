@@ -12,6 +12,7 @@ from email.mime.application import MIMEApplication
 from pathlib import Path
 from datetime import datetime
 import time
+from email.header import Header
 
 
 def decode_mime_words(s):
@@ -112,6 +113,10 @@ def check_mail():
                     sender_name, sender_email = parseaddr(from_raw)
                     if sender_email:
                         recipients_to_notify.add(sender_email)
+                        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                        with open("papers_received_logs.txt", "a", encoding="utf-8") as logs:
+                            logs.write(
+                                f"{timestamp} received from: {sender_email}\n")
                 mail.store(num, '+FLAGS', '\\Seen')
         mail.logout()
     except Exception as e:

@@ -343,13 +343,7 @@ def main():
             mail_check_interval_base = 150
             new_report_cycle = 30
         mail_check_interval = mail_check_interval_base + randint(0, 20)
-        try:
-            emails.check_mail()
-            time_stamp = str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
-            print(time_stamp + ": mail checked")
 
-        except Exception as e:
-            print(f"Возникла ошибка при проверке почты: {e}")
         if cycle > new_report_cycle:
             cycle = 0
         if cycle == 0:
@@ -357,6 +351,13 @@ def main():
                 prepare_report()
             except Exception as e:
                 print(f"Возникла ошибка при подготовке файла: {e}")
+        try:
+            emails.check_mail()
+            time_stamp = str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+            print(time_stamp + ": mail checked")
+
+        except Exception as e:
+            print(f"Возникла ошибка при проверке почты: {e}")
         cycle += 1
         time.sleep(mail_check_interval)
 
