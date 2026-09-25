@@ -351,11 +351,12 @@ def main():
         except Exception as e:
             print(f"Возникла ошибка при проверке почты: {e}")
         if cycle > new_report_cycle:
+            cycle = 0
+        if cycle == 0:
             try:
                 prepare_report()
             except Exception as e:
                 print(f"Возникла ошибка при подготовке файла: {e}")
-            cycle = 0
         cycle += 1
         time.sleep(mail_check_interval)
 

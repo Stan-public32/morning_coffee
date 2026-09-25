@@ -11,6 +11,7 @@ from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 from pathlib import Path
 from datetime import datetime
+import time
 
 
 def decode_mime_words(s):
@@ -46,6 +47,8 @@ def folders_list():
 def check_mail():
     EMAIL_ACCOUNT = ""
     APP_PASSWORD = ""
+    MAX_RETRIES = 10
+    TIMEOUT_SECONDS = 5
     with open("keys.txt", "r") as keys:
         lines = keys.readlines()
         EMAIL_ACCOUNT = str(lines[0])
@@ -72,10 +75,28 @@ def check_mail():
         return
     recipients_to_notify = set()
     try:
-        mail = imaplib.IMAP4_SSL(IMAP_SERVER)
+        connection = False
+        for attempt in range(0, MAX_RETRIES):
+            try:
+                mail = imaplib.IMAP4_SSL(IMAP_SERVER, timeout=TIMEOUT_SECONDS)
+                mail.sock.settimeout(TIMEOUT_SECONDS)
+                connection = True
+                break
+            except Exception as e:
+                with open("papers_sent_logs.txt", "a") as logs:
+                    logs.write(datetime.now().strftime(
+                        "%Y-%m-%d_%H-%M-%S") + " IMAP connection error, attempt: " + str(attempt) + "\n")
+                print(datetime.now().strftime(
+                    "%Y-%m-%d_%H-%M-%S") + " IMAP connection error, attempt: " + str(attempt) + "\n")
+                time.sleep(3)
+        if not connection:
+            raise Exception("Failed to connect.")
         mail.login(EMAIL_ACCOUNT, APP_PASSWORD)
         for folder in folders_to_search:
-            mail.select(str(folder))
+            status, _ = mail.select(str(folder))
+            if status != 'OK':
+                print(f"Папка {folder} недоступна, пропускаем")
+                continue
             status, messages = mail.search(None, 'UNSEEN')
             if status != 'OK':
                 print("Не удалось получить список писем.")
@@ -93,7 +114,6 @@ def check_mail():
                         recipients_to_notify.add(sender_email)
                 mail.store(num, '+FLAGS', '\\Seen')
         mail.logout()
-
     except Exception as e:
         print(f"Ошибка при работе с IMAP: {e}")
         return
@@ -102,26 +122,46 @@ def check_mail():
         return
 
     try:
-        server = smtplib.SMTP_SSL(SMTP_SERVER, 465)
+        connection = False
+        for attempt in range(MAX_RETRIES):
+            try:
+                server = smtplib.SMTP_SSL(
+                    SMTP_SERVER, 465, timeout=TIMEOUT_SECONDS)
+                server.sock.settimeout(TIMEOUT_SECONDS)
+                connection = True
+                break
+            except Exception as e:
+                timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                msg_log = f"{timestamp} SMTP connection error, attempt: {attempt}\n"
+                with open("papers_sent_logs.txt", "a", encoding="utf-8") as logs:
+                    logs.write(msg_log)
+                print(msg_log.strip())
+                time.sleep(3)
+        if not connection:
+            raise Exception("Failed to connect.")
         server.login(EMAIL_ACCOUNT, APP_PASSWORD)
-
+        with open(FILE_PATH, "rb") as f:
+            file_data = f.read()
         for recipient in recipients_to_notify:
-            msg = MIMEMultipart()
-            msg['From'] = EMAIL_ACCOUNT
-            msg['To'] = recipient
-            msg['Subject'] = "Свежий выпуск Morning_Coffee по вашему запросу"
-            body = "Добрый день!\n\nВо вложении находится запрошенный вами свежий выпуск интерактивной газеты Morning_Coffee.\n\nС уважением,\nРазработчик\nСтанислав Конов\n\n\np.s. Настоящее письмо не является рассылкой, оно формируется автоматически в ответ на запрос, \nнаправленный на public32@yandex.ru с указанием слова 'газета' в теме письма.\n\nДля обратной связи: public32@xmail.ru"
-            msg.attach(MIMEText(body, 'plain', 'utf-8'))
-            with open(FILE_PATH, "rb") as f:
+            try:
+                msg = MIMEMultipart()
+                msg['From'] = EMAIL_ACCOUNT
+                msg['To'] = recipient
+                msg['Subject'] = Header(
+                    "Свежий выпуск Morning_Coffee по вашему запросу", "utf-8")
+                body = "Добрый день!\n\nВо вложении находится запрошенный вами свежий выпуск интерактивной газеты Morning_Coffee.\n\nС уважением,\nРазработчик\nСтанислав Конов\n\n\np.s. Настоящее письмо не является рассылкой, оно формируется автоматически в ответ на запрос, \nнаправленный на public32@yandex.ru с указанием слова 'газета' в теме письма.\n\nДля обратной связи: public32@xmail.ru"
+                msg.attach(MIMEText(body, 'plain', 'utf-8'))
                 part = MIMEApplication(
-                    f.read(), Name=os.path.basename(FILE_PATH))
-            part['Content-Disposition'] = f'attachment; filename="{os.path.basename(FILE_PATH)}"'
-            msg.attach(part)
-            server.sendmail(EMAIL_ACCOUNT, recipient, msg.as_string())
-            with open("papers_sent_logs.txt", "a") as logs:
-                logs.write(str(datetime.now().strftime(
-                    "%Y-%m-%d_%H-%M-%S")) + " sent to: " + recipient + "\n")
-
+                    file_data, Name=os.path.basename(FILE_PATH))
+                part['Content-Disposition'] = f'attachment; filename="{os.path.basename(FILE_PATH)}"'
+                msg.attach(part)
+                server.sendmail(EMAIL_ACCOUNT, recipient, msg.as_string())
+                timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                with open("papers_sent_logs.txt", "a", encoding="utf-8") as logs:
+                    logs.write(f"{timestamp} sent to: {recipient}\n")
+            except Exception as e:
+                print(f"Не удалось отправить {recipient}: {e}")
+                continue
         server.quit()
     except Exception as e:
         print(f"Ошибка при работе с SMTP: {e}")
