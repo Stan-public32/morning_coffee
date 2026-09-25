@@ -1,4 +1,7 @@
 forecast_decode.txt
 test.txt
 keys.txt
+papers_sent_logs.txt
+papers_received_logs.txt
 __pycache__
+output
