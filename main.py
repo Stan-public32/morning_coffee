@@ -363,5 +363,5 @@ def main():
 
 
 if __name__ == '__main__':
-    # prepare_report()
-    main()
+    prepare_report()
+    # main()
